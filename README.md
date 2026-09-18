@@ -141,9 +141,13 @@ This enables simulated discovery and dynamic network events clearly labeled with
 
 ---
 
-## License
+## License & Commercial Restrictions
 
-This project is open-source and released under the **[MIT License](LICENSE)**.
+This project is governed by the **[NETSENTRY Non-Commercial & Anti-Resale Source License](LICENSE)**.
 
-Copyright &copy; 2026 **George Asiedu Annan** &bull; **Neolifeporium**. All rights reserved.  
-Strictly intended for authorized research, institutional administration, educational computing, and controlled laboratory environments.
+**STRICT PROHIBITION ON RESALE:**
+- **Commercial Resale Forbidden**: You are strictly prohibited from selling, reselling, sublicensing, leasing, or monetizing this system, source code, binaries, or derivative works.
+- **No Commercial SaaS/Hosting**: Operating or marketing this platform as a paid SaaS, subscription, or MSP product without a signed commercial agreement is prohibited.
+- **Permitted Use**: Academic research, educational evaluations, personal non-commercial learning, and authorized institutional demonstrations only.
+
+Copyright &copy; 2026 **George Asiedu Annan** &bull; **Neolifeporium**. All rights reserved.

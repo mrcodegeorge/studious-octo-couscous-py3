@@ -1,24 +1,47 @@
-MIT License
+NETSENTRY PROPRIETARY & NON-COMMERCIAL SOURCE LICENSE
 
 Copyright (c) 2026 George Asiedu Annan
 Company: Neolifeporium
 Subsidiary: Gazomapay
 Associated Assets: Neodata, Nexa Kreatives, Nexa Kreatives Academy
+All Rights Reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+================================================================================
+STRICT COMMERCIAL USE & RESALE PROHIBITION
+================================================================================
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. PERMITTED USE (NON-COMMERCIAL ONLY):
+Permission is hereby granted to individuals, academic institutions, students, and 
+researchers to inspect, download, compile, evaluate, and test this software 
+("NETSENTRY") strictly for EDUCATIONAL, ACADEMIC RESEARCH, and NON-COMMERCIAL 
+demonstration purposes, subject to the conditions herein.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. STRICT PROHIBITION ON RESALE & MONETIZATION:
+YOU ARE EXPRESSLY FORBIDDEN TO:
+  a. Sell, resell, rent, lease, sublicense, distribute for payment, or commercially 
+     exploit this software, in whole or in part, in source code, binary, compiled, 
+     containerized, or hosted format.
+  b. Bundle, integrate, or package this software, or any derivative works, into any 
+     commercial product, physical appliance, turnkey computer lab hardware, or paid service.
+  c. Offer or operate this software as a commercial software-as-a-service (SaaS), 
+     managed service provider (MSP) tool, paid remote monitoring solution, or cloud platform.
+  d. Remove, modify, or obscure any copyright, author attribution, or ownership notices 
+     identifying George Asiedu Annan, Neolifeporium, Gazomapay, Neodata, Nexa Kreatives, 
+     or Nexa Kreatives Academy.
+
+3. INTELLECTUAL PROPERTY & OWNERSHIP:
+All title, ownership, intellectual property rights, and copyright in and to this 
+software, architectures, algorithms, client applications, and documentation remain 
+the exclusive property of George Asiedu Annan and Neolifeporium.
+
+4. COMMERCIAL INQUIRIES:
+Any commercial licensing, enterprise deployment, or authorized redistribution requires 
+an explicit, signed written agreement executed directly with George Asiedu Annan / 
+Neolifeporium.
+
+5. DISCLAIMER OF WARRANTY:
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+AUTHOR, COPYRIGHT HOLDERS, PARENT COMPANY, OR SUBSIDIARIES BE LIABLE FOR ANY 
+CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE USE OF THIS SOFTWARE.

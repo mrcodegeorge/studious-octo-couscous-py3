@@ -161,4 +161,4 @@ NETSENTRY proves that local network observability, web safety enforcement, and r
   - Neodata (Analytics & Security Intelligence)
   - Nexa Kreatives (Product Design & Interaction Architecture)
   - Nexa Kreatives Academy (Curriculum & Technical Research)
-- **License**: MIT License (Copyright &copy; 2026 George Asiedu Annan / Neolifeporium). All rights reserved.
+- **License**: NETSENTRY Non-Commercial & Anti-Resale Source License (Copyright &copy; 2026 George Asiedu Annan / Neolifeporium). All commercial resale, leasing, sublicensing, and paid distribution are strictly prohibited. All rights reserved.
