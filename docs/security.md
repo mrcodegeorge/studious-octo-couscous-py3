@@ -1,5 +1,10 @@
 # NETSENTRY Security & Privacy Model
 
+> [!CAUTION]
+> ### ⚠️ STRICT PROHIBITION ON MALICIOUS USE, HACKING & SCAMS
+> **THIS PROJECT IS ABSOLUTELY NOT FOR HACKERS, SCAMMERS, OR FRAUDSTERS.**
+> NETSENTRY is designed solely for authorized network defense, educational research, and transparent laboratory environments. Any deployment for unauthorized surveillance, extortion, phishing, tech-support scams, or hacking is strictly prohibited, terminates all licenses, and is criminally punishable under international cybercrime laws.
+
 ## Principles & Invariants
 
 ### 1. Zero Stealth Access

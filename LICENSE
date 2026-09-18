@@ -29,17 +29,31 @@ YOU ARE EXPRESSLY FORBIDDEN TO:
      identifying George Asiedu Annan, Neolifeporium, Gazomapay, Neodata, Nexa Kreatives, 
      or Nexa Kreatives Academy.
 
-3. INTELLECTUAL PROPERTY & OWNERSHIP:
+3. STRICT PROHIBITION ON MALICIOUS USE, HACKING, OR SCAMMING:
+THIS SOFTWARE IS NOT FOR HACKERS, SCAMMERS, OR FRAUDULENT ACTORS.
+YOU SHALL NOT:
+  a. Deploy, execute, or install this software on any computer, mobile device, or network 
+     without the explicit, informed, prior written authorization of the owner and active users.
+  b. Utilize this software for covert surveillance, unauthorized electronic eavesdropping, 
+     stealth monitoring, cyber-stalking, blackmail, extortion, or fraudulent IT support operations.
+  c. Modify, reverse-engineer, or adapt the source code to bypass the mandatory graphical 
+     consent dialogs, countdown timers, visible recording banners, or termination controls.
+  d. Incorporate this codebase into malware, remote access trojans (RATs), spyware, 
+     phishing kits, credential harvesters, or scam-enablement toolkits.
+ANY VIOLATION OF THIS SECTION IMMEDIATELY REVOKES ALL PERMISSIONS AND SHALL BE REPORTED 
+TO LAW ENFORCEMENT AND REGULATORY AUTHORITIES FOR PROSECUTION UNDER COMPUTER CRIME LAWS.
+
+4. INTELLECTUAL PROPERTY & OWNERSHIP:
 All title, ownership, intellectual property rights, and copyright in and to this 
 software, architectures, algorithms, client applications, and documentation remain 
 the exclusive property of George Asiedu Annan and Neolifeporium.
 
-4. COMMERCIAL INQUIRIES:
+5. COMMERCIAL INQUIRIES:
 Any commercial licensing, enterprise deployment, or authorized redistribution requires 
 an explicit, signed written agreement executed directly with George Asiedu Annan / 
 Neolifeporium.
 
-5. DISCLAIMER OF WARRANTY:
+6. DISCLAIMER OF WARRANTY:
 THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
 FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE 

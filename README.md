@@ -1,7 +1,15 @@
 # NETSENTRY
 ### Local Wi-Fi Network Monitoring & Consent-Based Remote Camera System
 
-NETSENTRY is an authorized local-network monitoring platform paired with a **strictly consent-driven remote optical verification subsystem**. Built for computer laboratories, educational environments, research facilities, and controlled demonstrations, it provides comprehensive real-time situational awareness over connected devices while strictly upholding endpoint privacy.
+> [!CAUTION]
+> ### ⚠️ STRICT LEGAL, ETHICAL & ANTI-FRAUD DISCLAIMER
+> **NETSENTRY IS STRICTLY FOR AUTHORIZED LABS, RESEARCH & DEFENSIVE IT ADMINISTRATION.**
+>
+> **THIS SYSTEM IS STRICTLY NOT FOR HACKERS, SCAMMERS, OR COVERT SURVEILLANCE:**
+> - **Zero Tolerance for Malicious Use**: NETSENTRY must NEVER be deployed onto any machine, subnet, or device without explicit, prior, written authorization from the system owners and monitored users.
+> - **Anti-Spyware & Anti-RAT Mandate**: This system contains **NO** stealth activation, hidden persistence, backdoors, keystroke logging, or covert surveillance routines. The camera can **NEVER** be activated without human consent (`ALLOW` dialog).
+> - **Anti-Scam & Anti-Extortion Policy**: Any use of this tool for fraud, impersonation, phishing, cyber-extortion, or unauthorized snooping is strictly prohibited and immediately terminates all licenses.
+> - **Legal Notice**: The author (**George Asiedu Annan**) and **Neolifeporium** strictly condemn unauthorized hacking. Illicit deployment violates the Computer Fraud and Abuse Act (CFAA), the Computer Misuse Act, and applicable international penal codes.
 
 ---
 

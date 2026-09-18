@@ -73,6 +73,15 @@ class NetsentryClientUI:
         )
         sub_label.pack(anchor=tk.W, pady=(2, 0))
 
+        disclaimer_label = tk.Label(
+            header_frame,
+            text="⚠️ STRICTLY FOR AUTHORIZED LAB & DEFENSIVE IT USE • NOT FOR HACKERS OR SCAMMERS",
+            font=("Helvetica", 8, "bold"),
+            fg="#fbbf24",
+            bg=BG_CARD
+        )
+        disclaimer_label.pack(anchor=tk.W, pady=(4, 0))
+
         # Main Container
         main_frame = tk.Frame(self.root, bg=BG_DARK, padx=20, pady=16)
         main_frame.pack(fill=tk.BOTH, expand=True)
@@ -437,6 +446,10 @@ class NetsentryClientUI:
         text_box.pack(fill=tk.BOTH, expand=True, padx=20, pady=(0, 16))
 
         policy = (
+            "⚠️ STRICT ZERO-TOLERANCE ANTI-HACKING & ANTI-SCAM NOTICE:\n"
+            "NETSENTRY is strictly engineered for authorized research, educational laboratories, and institutional IT defense. "
+            "It is STRICTLY PROHIBITED to deploy this software for unauthorized surveillance, extortion, phishing, tech-support scams, "
+            "or hacking. Any attempt to modify code to bypass explicit consent violates international cybercrime laws.\n\n"
             "1. LOCAL NETWORK DISCOVERY:\n"
             "NETSENTRY discovers devices on your local authorized Wi-Fi/LAN via standard ARP queries. "
             "It collects IP address, MAC address, hostname, and manufacturer to maintain device inventory.\n\n"
