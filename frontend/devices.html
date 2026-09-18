@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NETSENTRY - Network Devices Inventory</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">🛡️</div>
+        <div>
+          <div class="brand-title">NETSENTRY</div>
+          <div class="brand-subtitle">Authorized Monitoring</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/dashboard.html" class="nav-link">📊 Dashboard</a>
+        <a href="/devices.html" class="nav-link active">💻 Devices</a>
+        <a href="/network.html" class="nav-link">🌐 Network & Scans</a>
+        <a href="/camera.html" class="nav-link">📷 Camera Sessions</a>
+        <a href="/alerts.html" class="nav-link">
+          🔔 Alerts
+          <span id="sidebar-alert-badge" class="nav-badge" style="display:none;">0</span>
+        </a>
+        <a href="/audit.html" class="nav-link">📜 Audit Logs</a>
+        <a href="/reports.html" class="nav-link">📑 Reports</a>
+        <a href="/settings.html" class="nav-link">⚙️ Settings</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-profile">
+          <div class="admin-info">
+            <span id="admin-display-name" class="admin-name">Admin</span>
+            <span class="admin-role">Administrator</span>
+          </div>
+          <button class="btn-logout" onclick="App.logout()">Exit</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Section -->
+    <main class="main-wrapper">
+      <header class="top-header">
+        <div class="header-status-pills">
+          <div class="status-pill">
+            <span id="header-pulse-dot" class="pulse-dot"></span>
+            <span id="header-status-text">Device Inventory Active</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <a href="/reports.html" class="btn btn-secondary btn-sm">📑 Export Devices</a>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Local Network Devices</h1>
+            <p class="page-subtitle">Inspect, classify, and manage trust for all discovered hardware endpoints</p>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="card" style="padding: 16px 20px; margin-bottom: 20px;">
+          <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center;">
+            <div style="flex: 1; min-width: 220px;">
+              <input type="text" id="filter-search" class="form-control" placeholder="Search IP, MAC, Vendor, Hostname..." oninput="applyFilters()">
+            </div>
+
+            <div style="width: 140px;">
+              <select id="filter-status" class="form-control" onchange="applyFilters()">
+                <option value="">All Statuses</option>
+                <option value="ONLINE">Online</option>
+                <option value="OFFLINE">Offline</option>
+                <option value="NEW">New</option>
+              </select>
+            </div>
+
+            <div style="width: 140px;">
+              <select id="filter-trust" class="form-control" onchange="applyFilters()">
+                <option value="">All Trust States</option>
+                <option value="true">Trusted Only</option>
+                <option value="false">Untrusted Only</option>
+              </select>
+            </div>
+
+            <div style="width: 140px;">
+              <select id="filter-client" class="form-control" onchange="applyFilters()">
+                <option value="">All Clients</option>
+                <option value="true">Enrolled Only</option>
+                <option value="false">Non-Enrolled</option>
+              </select>
+            </div>
+
+            <button class="btn btn-secondary btn-sm" onclick="resetFilters()">Reset</button>
+          </div>
+        </div>
+
+        <!-- Devices Table -->
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Device / Label</th>
+                  <th>IP Address</th>
+                  <th>MAC Address</th>
+                  <th>Vendor</th>
+                  <th>Status</th>
+                  <th>Trust</th>
+                  <th>Client</th>
+                  <th>Last Seen</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="devices-tbody">
+                <tr>
+                  <td colspan="9" style="text-align:center; padding:30px; color:var(--text-dim);">
+                    Loading devices...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/app.js"></script>
+  <script>
+    let devicesList = [];
+
+    async function initDevicesPage() {
+      App.init();
+      await loadDevices();
+
+      window.onSystemEvent = (event) => {
+        loadDevices(true);
+      };
+    }
+
+    async function loadDevices(silent = false) {
+      try {
+        const data = await API.getDevices();
+        if (data) {
+          devicesList = data;
+          applyFilters();
+        }
+      } catch (err) {
+        if (!silent) console.error("Error loading devices:", err);
+      }
+    }
+
+    function applyFilters() {
+      const q = document.getElementById("filter-search").value.toLowerCase();
+      const st = document.getElementById("filter-status").value;
+      const tr = document.getElementById("filter-trust").value;
+      const cl = document.getElementById("filter-client").value;
+
+      const filtered = devicesList.filter(d => {
+        const matchSearch = !q || (
+          (d.hostname && d.hostname.toLowerCase().includes(q)) ||
+          d.ip_address.toLowerCase().includes(q) ||
+          d.mac_address.toLowerCase().includes(q) ||
+          (d.vendor && d.vendor.toLowerCase().includes(q)) ||
+          (d.custom_label && d.custom_label.toLowerCase().includes(q))
+        );
+
+        const matchStatus = !st || d.status === st;
+        const matchTrust = tr === "" || String(d.trusted) === tr;
+        const matchClient = cl === "" || String(d.client_registered) === cl;
+
+        return matchSearch && matchStatus && matchTrust && matchClient;
+      });
+
+      renderTable(filtered);
+    }
+
+    function resetFilters() {
+      document.getElementById("filter-search").value = "";
+      document.getElementById("filter-status").value = "";
+      document.getElementById("filter-trust").value = "";
+      document.getElementById("filter-client").value = "";
+      applyFilters();
+    }
+
+    function renderTable(devices) {
+      const tbody = document.getElementById("devices-tbody");
+      if (!devices || devices.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align:center; padding:30px; color:var(--text-dim);">
+              No matching network devices found.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = devices.map(d => {
+        const name = d.custom_label || d.hostname || "Unknown Host";
+        const statusBadge = d.status === "ONLINE" ? '<span class="badge badge-online">● ONLINE</span>' :
+                            d.status === "NEW" ? '<span class="badge badge-new">★ NEW</span>' :
+                            '<span class="badge badge-offline">● OFFLINE</span>';
+
+        const clientBadge = d.client_registered ? 
+          (d.client_connected ? '<span class="badge badge-registered">● ENROLLED</span>' : '<span class="badge badge-warning">ENROLLED (OFF)</span>') : 
+          '<span class="badge badge-untrusted">NONE</span>';
+
+        const trustBtn = d.trusted ? 
+          `<button class="btn btn-secondary btn-sm" onclick="toggleTrust(${d.id}, false)">Revoke Trust</button>` :
+          `<button class="btn btn-primary btn-sm" onclick="toggleTrust(${d.id}, true)">Trust Device</button>`;
+
+        let camBtn = '';
+        if (d.active_camera_session) {
+          camBtn = `<a href="/camera.html?device_id=${d.id}" class="btn btn-danger btn-sm">Stream 🔴</a>`;
+        } else if (d.client_registered && d.client_connected) {
+          camBtn = `<button class="btn btn-primary btn-sm" onclick="requestCam(${d.id}, '${name.replace(/'/g, "\\'")}')">Request Cam</button>`;
+        }
+
+        return `
+          <tr>
+            <td>
+              <a href="/device-details.html?id=${d.id}" style="color:var(--text-main);font-weight:600;text-decoration:none;">
+                ${escapeHtml(name)}
+              </a>
+              ${d.trusted ? '<span style="color:var(--accent-purple);margin-left:4px;" title="Trusted">🛡️</span>' : ''}
+            </td>
+            <td style="font-family:var(--font-mono);font-size:12px;">${d.ip_address}</td>
+            <td style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">${d.mac_address}</td>
+            <td>${escapeHtml(d.vendor || 'Unknown')}</td>
+            <td>${statusBadge}</td>
+            <td>${d.trusted ? '<span class="badge badge-trusted">TRUSTED</span>' : '<span class="badge badge-untrusted">UNTRUSTED</span>'}</td>
+            <td>${clientBadge}</td>
+            <td style="font-size:11px;color:var(--text-dim);">${formatTime(d.last_seen)}</td>
+            <td>
+              <div style="display:flex;gap:6px;align-items:center;">
+                ${camBtn}
+                ${trustBtn}
+                <a href="/device-details.html?id=${d.id}" class="btn btn-secondary btn-sm">Inspect</a>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function toggleTrust(deviceId, trusted) {
+      try {
+        await API.setDeviceTrust(deviceId, trusted);
+        App.toast(`Device trust ${trusted ? 'granted' : 'revoked'}.`, "success");
+        await loadDevices(true);
+      } catch (err) {
+        App.toast(err.message || "Failed to update trust", "error");
+      }
+    }
+
+    async function requestCam(deviceId, name) {
+      if (!confirm(`Request camera access for ${name}?\n\nTarget device will show a visible permission dialog.`)) {
+        return;
+      }
+      try {
+        const session = await API.requestCamera(deviceId);
+        App.toast("Camera request sent. Waiting for user consent...", "info");
+        setTimeout(() => {
+          window.location.href = `/camera.html?session_uuid=${session.session_uuid}&device_id=${deviceId}`;
+        }, 1200);
+      } catch (err) {
+        App.toast(err.message || "Request failed", "error");
+      }
+    }
+
+    function formatTime(iso) {
+      if (!iso) return "N/A";
+      const d = new Date(iso);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    initDevicesPage();
+  </script>
+</body>
+</html>

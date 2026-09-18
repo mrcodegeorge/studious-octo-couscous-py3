@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NETSENTRY - Report Generation & Data Export</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">🛡️</div>
+        <div>
+          <div class="brand-title">NETSENTRY</div>
+          <div class="brand-subtitle">Authorized Monitoring</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/dashboard.html" class="nav-link">📊 Dashboard</a>
+        <a href="/devices.html" class="nav-link">💻 Devices</a>
+        <a href="/network.html" class="nav-link">🌐 Network & Scans</a>
+        <a href="/camera.html" class="nav-link">📷 Camera Sessions</a>
+        <a href="/alerts.html" class="nav-link">
+          🔔 Alerts
+          <span id="sidebar-alert-badge" class="nav-badge" style="display:none;">0</span>
+        </a>
+        <a href="/audit.html" class="nav-link">📜 Audit Logs</a>
+        <a href="/reports.html" class="nav-link active">📑 Reports</a>
+        <a href="/settings.html" class="nav-link">⚙️ Settings</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-profile">
+          <div class="admin-info">
+            <span id="admin-display-name" class="admin-name">Admin</span>
+            <span class="admin-role">Administrator</span>
+          </div>
+          <button class="btn-logout" onclick="App.logout()">Exit</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-wrapper">
+      <header class="top-header">
+        <div class="header-status-pills">
+          <div class="status-pill">
+            <span class="pulse-dot"></span>
+            <span>Report Engine Ready</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Executive Reports & Data Export</h1>
+            <p class="page-subtitle">Export cryptographically verified system audit logs, device inventories, and consent reports</p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+          <!-- Device Inventory Report Card -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Network Device Inventory Report</div>
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+              Complete census of discovered hosts, hardware MAC addresses, manufacturer classification, and trust status.
+            </p>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-primary" onclick="downloadReport('/api/reports/devices?format=pdf')">
+                📄 Download PDF
+              </button>
+              <button class="btn btn-secondary" onclick="downloadReport('/api/reports/devices?format=csv')">
+                📊 Export CSV
+              </button>
+            </div>
+          </div>
+
+          <!-- Camera Access & Consent Report Card -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Consent-Based Camera Access Report</div>
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+              Full verification log of all remote camera requests, user approval decisions, explicit denials, durations, and stop reasons.
+            </p>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-primary" onclick="downloadReport('/api/reports/camera?format=pdf')">
+                📄 Download PDF
+              </button>
+              <button class="btn btn-secondary" onclick="downloadReport('/api/reports/camera?format=csv')">
+                📊 Export CSV
+              </button>
+            </div>
+          </div>
+
+          <!-- Security Audit Trail Report Card -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Security & System Audit Log</div>
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+              Immutable audit ledger export recording all logins, scan executions, subnet adjustments, trust toggles, and client events.
+            </p>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-secondary" onclick="downloadReport('/api/reports/audit?format=csv')">
+                📊 Export Full CSV Audit
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/app.js"></script>
+  <script>
+    App.init();
+
+    async function downloadReport(url) {
+      const token = API.getToken();
+      App.toast("Generating report file...", "info");
+
+      try {
+        const response = await fetch(url, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to generate report: " + response.statusText);
+        }
+
+        const blob = await response.blob();
+        const disposition = response.headers.get("content-disposition");
+        let filename = "netsentry_report";
+        if (disposition && disposition.includes("filename=")) {
+          filename = disposition.split("filename=")[1].replace(/["']/g, "").trim();
+        }
+
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(link.href);
+
+        App.toast("Report downloaded successfully.", "success");
+      } catch (err) {
+        App.toast(err.message || "Export error", "error");
+      }
+    }
+  </script>
+</body>
+</html>

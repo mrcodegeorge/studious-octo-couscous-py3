@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NETSENTRY - Administrator Authentication</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #111927 0%, #0a0e17 100%);
+      padding: 20px;
+    }
+    .auth-box {
+      width: 100%;
+      max-width: 420px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 36px 32px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+    }
+    .auth-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .auth-alert {
+      background: #f43f5e20;
+      border: 1px solid #f43f5e40;
+      color: var(--accent-rose);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .auth-success {
+      background: #10b98120;
+      border: 1px solid #10b98140;
+      color: var(--accent-green);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      margin-bottom: 16px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="auth-box">
+    <div class="auth-brand">
+      <div class="brand-icon">🛡️</div>
+      <div>
+        <div class="brand-title">NETSENTRY</div>
+        <div class="brand-subtitle">Network & Consent Camera System</div>
+      </div>
+    </div>
+
+    <div id="auth-alert" class="auth-alert"></div>
+    <div id="auth-success" class="auth-success"></div>
+
+    <!-- Login Form -->
+    <div id="login-section">
+      <h2 style="font-size: 18px; margin-bottom: 6px;">Administrator Sign In</h2>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">
+        Authorized personnel monitoring access only.
+      </p>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label class="form-label" for="username">Username</label>
+          <input type="text" id="username" class="form-control" placeholder="admin" required autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 11px;">
+          Authenticate
+        </button>
+      </form>
+    </div>
+
+    <!-- First Time Setup Wizard Form -->
+    <div id="setup-section" style="display: none;">
+      <h2 style="font-size: 18px; margin-bottom: 6px; color: var(--accent-cyan);">Initial System Setup</h2>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px;">
+        No administrator account exists. Configure the primary administrator credentials.
+      </p>
+
+      <form id="setup-form">
+        <div class="form-group">
+          <label class="form-label" for="setup-username">Admin Username</label>
+          <input type="text" id="setup-username" class="form-control" placeholder="admin" required minlength="3">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setup-email">Admin Email (Optional)</label>
+          <input type="email" id="setup-email" class="form-control" placeholder="admin@network.local">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setup-password">Admin Password (Min 8 characters)</label>
+          <input type="password" id="setup-password" class="form-control" placeholder="Strong password" required minlength="8">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setup-confirm">Confirm Password</label>
+          <input type="password" id="setup-confirm" class="form-control" placeholder="Re-type password" required minlength="8">
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 11px;">
+          Initialize Administrator
+        </button>
+      </form>
+    </div>
+
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-subtle); text-align: center; font-size: 11px; color: var(--text-dim);">
+      NETSENTRY Local Monitoring System &bull; Consent Architecture
+    </div>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script>
+    const alertBox = document.getElementById("auth-alert");
+    const successBox = document.getElementById("auth-success");
+
+    function showAlert(msg) {
+      alertBox.textContent = msg;
+      alertBox.style.display = "block";
+      successBox.style.display = "none";
+    }
+
+    function showSuccess(msg) {
+      successBox.textContent = msg;
+      successBox.style.display = "block";
+      alertBox.style.display = "none";
+    }
+
+    async function initAuthPage() {
+      try {
+        const res = await API.checkSetupStatus();
+        if (res && res.setup_needed) {
+          document.getElementById("login-section").style.display = "none";
+          document.getElementById("setup-section").style.display = "block";
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    document.getElementById("login-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const u = document.getElementById("username").value.trim();
+      const p = document.getElementById("password").value;
+
+      try {
+        const res = await API.login(u, p);
+        if (res && res.access_token) {
+          API.setToken(res.access_token);
+          API.setUser(res.user);
+          showSuccess("Authentication successful! Loading dashboard...");
+          setTimeout(() => {
+            window.location.href = "/dashboard.html";
+          }, 600);
+        }
+      } catch (err) {
+        showAlert(err.message || "Invalid credentials or account locked.");
+      }
+    });
+
+    document.getElementById("setup-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const u = document.getElementById("setup-username").value.trim();
+      const email = document.getElementById("setup-email").value.trim() || null;
+      const p = document.getElementById("setup-password").value;
+      const c = document.getElementById("setup-confirm").value;
+
+      if (p !== c) {
+        showAlert("Passwords do not match.");
+        return;
+      }
+
+      try {
+        await API.setupInitialAdmin({ username: u, email, password: p });
+        showSuccess("Administrator created! Logging in...");
+        const loginRes = await API.login(u, p);
+        API.setToken(loginRes.access_token);
+        API.setUser(loginRes.user);
+        setTimeout(() => {
+          window.location.href = "/dashboard.html";
+        }, 800);
+      } catch (err) {
+        showAlert(err.message || "Failed to initialize administrator.");
+      }
+    });
+
+    initAuthPage();
+  </script>
+</body>
+</html>
