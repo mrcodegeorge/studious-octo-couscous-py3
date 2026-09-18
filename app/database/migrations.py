@@ -28,8 +28,35 @@ def init_db():
                 setting = SystemSetting(key=key, value=val, description=desc)
                 db.add(setting)
 
+        # Seed default web filter rules if none exist
+        from app.models.web_policy import WebFilterRule, VpnRestrictionPolicy
+        if db.query(WebFilterRule).count() == 0:
+            default_rules = [
+                ("*.tiktok.com", "Social Media", "BLOCK", "Block TikTok short videos"),
+                ("*.facebook.com", "Social Media", "BLOCK", "Block Facebook portal and CDN"),
+                ("*.instagram.com", "Social Media", "BLOCK", "Block Instagram photo/reels"),
+                ("*.bet365.com", "Gambling", "BLOCK", "Block online gambling portal"),
+                ("*.roblox.com", "Gaming", "BLOCK", "Block Roblox gaming traffic"),
+                ("*.nordvpn.com", "VPN/Proxy", "BLOCK", "Block commercial VPN portal"),
+                ("*.protonvpn.com", "VPN/Proxy", "BLOCK", "Block ProtonVPN endpoint"),
+                ("*.expressvpn.com", "VPN/Proxy", "BLOCK", "Block ExpressVPN gateway"),
+            ]
+            for dom, cat, act, desc in default_rules:
+                db.add(WebFilterRule(domain_pattern=dom, category=cat, action=act, description=desc, is_active=True))
+
+        # Seed default VPN restriction policy if none exists
+        if db.query(VpnRestrictionPolicy).count() == 0:
+            vpn_pol = VpnRestrictionPolicy(
+                block_all_vpns=True,
+                block_wireguard=True,
+                block_openvpn=True,
+                terminate_vpn_processes=True,
+                custom_blocked_adapters="wintun,wireguard,tap0901,nordlynx,openvpn,proton"
+            )
+            db.add(vpn_pol)
+
         db.commit()
-        logger.info("Database schema and default settings initialized successfully.")
+        logger.info("Database schema, default settings, and web filter policies initialized successfully.")
     except Exception as e:
         db.rollback()
         logger.error(f"Error during database initialization: {e}")

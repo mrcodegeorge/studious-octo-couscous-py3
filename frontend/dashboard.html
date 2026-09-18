@@ -25,6 +25,7 @@
         <a href="/dashboard.html" class="nav-link active">📊 Dashboard</a>
         <a href="/devices.html" class="nav-link">💻 Devices</a>
         <a href="/network.html" class="nav-link">🌐 Network & Scans</a>
+        <a href="/web-filter.html" class="nav-link">🛡️ Web & VPN Policy</a>
         <a href="/camera.html" class="nav-link">📷 Camera Sessions</a>
         <a href="/alerts.html" class="nav-link">
           🔔 Alerts
@@ -172,6 +173,41 @@
           </div>
         </div>
 
+        <!-- Web Activity & Anti-VPN Monitoring Card -->
+        <div class="card" style="margin-top: 24px;">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="card-title">🛡️ Recent Web Activities & Anti-VPN Interceptions</div>
+              <p style="font-size:12px; color:var(--text-dim); margin-top:2px;">
+                Live endpoint telemetry inspected across client nodes (bypasses VPN tunnels)
+              </p>
+            </div>
+            <a href="/web-filter.html" class="btn btn-secondary btn-sm">Manage Policies & Full Feed →</a>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Device</th>
+                  <th>Requested Domain</th>
+                  <th>Process</th>
+                  <th>VPN Status</th>
+                  <th>Disposition</th>
+                </tr>
+              </thead>
+              <tbody id="web-activity-tbody">
+                <tr>
+                  <td colspan="6" style="text-align: center; color: var(--text-dim); padding: 20px;">
+                    Loading recent web activity...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </main>
   </div>
@@ -233,9 +269,36 @@
           updateCharts(summary, devices);
         }
 
+        await loadRecentWebActivity();
+
         document.getElementById("last-updated-text").textContent = "Updated: " + new Date().toLocaleTimeString();
       } catch (err) {
         if (!silent) console.error("Error loading dashboard data:", err);
+      }
+    }
+
+    async function loadRecentWebActivity() {
+      try {
+        const res = await API.get("/api/v1/web-filter/activity?limit=6");
+        const tbody = document.getElementById("web-activity-tbody");
+        if (!tbody) return;
+        const items = res.items || [];
+        if (items.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-dim); padding: 20px;">No web activities captured yet. Enrolled client nodes report telemetry periodically.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = items.map(a => `
+          <tr>
+            <td style="font-family:var(--font-mono); font-size:12px; color:var(--text-dim);">${formatTimeAgo(a.timestamp)}</td>
+            <td style="font-weight:600;">${escapeHtml(a.hostname || a.mac_address || 'Unknown')}</td>
+            <td style="font-family:var(--font-mono); font-weight:700; color:var(--text-white);">${escapeHtml(a.domain)}</td>
+            <td style="font-size:12px; color:var(--text-muted);">${escapeHtml(a.process_name || 'browser')}</td>
+            <td>${a.is_vpn_traffic ? '<span class="badge badge-warning">VPN Active</span>' : '<span class="badge badge-secondary">LAN</span>'}</td>
+            <td><span class="badge ${a.action_taken === 'BLOCKED' ? 'badge-danger' : 'badge-success'}">${a.action_taken}</span></td>
+          </tr>
+        `).join("");
+      } catch (e) {
+        console.error("Web activity fetch error:", e);
       }
     }
 

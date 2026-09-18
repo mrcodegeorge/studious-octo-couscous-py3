@@ -24,11 +24,15 @@ try:
     from client.network import get_local_device_info, ClientNetworkManager
     from client.camera import CameraStreamer
     from client.ui import NetsentryClientUI
+    from client.activity_monitor import ActivityMonitor
+    from client.blocker import HostsBlocker, VpnDisarmer
 except ImportError:
     from config import load_client_config, save_client_config
     from network import get_local_device_info, ClientNetworkManager
     from camera import CameraStreamer
     from ui import NetsentryClientUI
+    from activity_monitor import ActivityMonitor
+    from blocker import HostsBlocker, VpnDisarmer
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("netsentry-client")
@@ -42,10 +46,14 @@ class NetsentryClientApp:
 
         self.net_manager = ClientNetworkManager(self.config.get("server_url", "http://127.0.0.1:8000"))
         self.streamer: Optional[CameraStreamer] = None
+        self.activity_monitor = ActivityMonitor()
+        self.hosts_blocker = HostsBlocker()
 
         self.ws_thread: Optional[threading.Thread] = None
         self.heartbeat_thread: Optional[threading.Thread] = None
+        self.web_thread: Optional[threading.Thread] = None
         self.is_running = True
+        self.blocked_violations_count = 0
 
         self.ui: Optional[NetsentryClientUI] = None
         if not self.cli_mode:
@@ -104,7 +112,7 @@ class NetsentryClientApp:
                 messagebox.showerror("Registration Failed", f"Could not enroll with server:\n{e}")
 
     def _start_background_services(self):
-        """Start heartbeat loop and WebSocket signaling listener."""
+        """Start heartbeat loop, WebSocket signaling listener, and web policy monitoring loop."""
         if not self.heartbeat_thread or not self.heartbeat_thread.is_alive():
             self.heartbeat_thread = threading.Thread(target=self._heartbeat_loop, daemon=True)
             self.heartbeat_thread.start()
@@ -112,6 +120,74 @@ class NetsentryClientApp:
         if not self.ws_thread or not self.ws_thread.is_alive():
             self.ws_thread = threading.Thread(target=self._ws_signaling_loop, daemon=True)
             self.ws_thread.start()
+
+        if not self.web_thread or not self.web_thread.is_alive():
+            self.web_thread = threading.Thread(target=self._web_monitoring_loop, daemon=True)
+            self.web_thread.start()
+
+    def _web_monitoring_loop(self):
+        """Monitors web browsing activity and enforces anti-VPN & domain restriction policies."""
+        server_url = self.config.get("server_url", "http://127.0.0.1:8000")
+        logger.info("Web Policy and Activity Monitoring engine active.")
+
+        while self.is_running:
+            try:
+                # 1. Fetch latest policy from server
+                import httpx
+                policy_url = f"{server_url.rstrip('/')}/api/v1/web-filter/client-policy"
+                with httpx.Client(timeout=4) as client:
+                    resp = client.get(policy_url)
+                    if resp.status_code == 200:
+                        policy_data = resp.json()
+                        blocked_rules = policy_data.get("blocked_domains", [])
+                        vpn_policy = policy_data.get("vpn_policy", {})
+
+                        # 2. Sync domain blocks to hosts file (bypasses VPN DNS tampering)
+                        blocked_patterns = [r["pattern"] for r in blocked_rules if r.get("action") == "BLOCK"]
+                        self.hosts_blocker.sync_blocked_domains(blocked_patterns)
+
+                        # 3. Detect and restrict VPN adapters / processes
+                        detected_vpns = self.activity_monitor.detect_active_vpn_adapters()
+                        is_vpn_active = len(detected_vpns) > 0
+                        if is_vpn_active and vpn_policy.get("block_all_vpns"):
+                            VpnDisarmer.enforce_vpn_restriction(vpn_policy, detected_vpns)
+
+                        # 4. Inspect local DNS cache & active connections
+                        new_domains = self.activity_monitor.inspect_dns_cache()
+                        activities = []
+                        for dom in new_domains:
+                            activities.append({
+                                "domain": dom,
+                                "remote_ip": None,
+                                "process_name": "browser",
+                                "is_vpn": is_vpn_active
+                            })
+
+                        # 5. Report activities to server
+                        if activities:
+                            report_url = f"{server_url.rstrip('/')}/api/v1/web-filter/activity"
+                            rep_payload = {
+                                "mac_address": self.mac_address,
+                                "ip_address": self.local_ip,
+                                "activities": activities[:50]
+                            }
+                            post_resp = client.post(report_url, json=rep_payload)
+                            if post_resp.status_code == 200:
+                                res_data = post_resp.json()
+                                self.blocked_violations_count += res_data.get("blocked_count", 0)
+
+                        # 6. Update Client UI Shield Badge
+                        if self.ui:
+                            self.ui.set_web_shield_status(
+                                rules_count=len(blocked_patterns),
+                                vpn_blocked=vpn_policy.get("block_all_vpns", True),
+                                blocked_count=self.blocked_violations_count
+                            )
+
+            except Exception as e:
+                logger.debug(f"Web monitoring cycle error: {e}")
+
+            time.sleep(12)
 
     def _heartbeat_loop(self):
         """Periodically ping the server to report online status."""
@@ -226,6 +302,14 @@ class NetsentryClientApp:
         if self.ui:
             self.ui.show_privacy_dialog()
 
+    def stop(self):
+        """Clean shutdown of background services and hosts block list."""
+        logger.info("Stopping NETSENTRY client services...")
+        self.is_running = False
+        if self.streamer:
+            self.streamer.stop()
+        self.hosts_blocker.clear_all_blocks()
+
     def _run_cli_loop(self):
         """Simple interactive loop for headless / CLI demonstration."""
         try:
@@ -233,7 +317,7 @@ class NetsentryClientApp:
                 time.sleep(1)
         except KeyboardInterrupt:
             logger.info("Stopping client...")
-            self.is_running = False
+            self.stop()
 
 
 def main():
@@ -242,7 +326,10 @@ def main():
     args = parser.parse_args()
 
     app = NetsentryClientApp(cli_mode=args.cli)
-    app.start()
+    try:
+        app.start()
+    finally:
+        app.stop()
 
 
 if __name__ == "__main__":

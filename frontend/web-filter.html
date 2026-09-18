@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NETSENTRY - Web Activity & Anti-VPN Content Filtering</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">🛡️</div>
+        <div>
+          <div class="brand-title">NETSENTRY</div>
+          <div class="brand-subtitle">Authorized Monitoring</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/dashboard.html" class="nav-link">📊 Dashboard</a>
+        <a href="/devices.html" class="nav-link">💻 Devices</a>
+        <a href="/network.html" class="nav-link">🌐 Network & Scans</a>
+        <a href="/web-filter.html" class="nav-link active">🛡️ Web & VPN Policy</a>
+        <a href="/camera.html" class="nav-link">📷 Camera Sessions</a>
+        <a href="/alerts.html" class="nav-link">
+          🔔 Alerts
+          <span id="sidebar-alert-badge" class="nav-badge" style="display:none;">0</span>
+        </a>
+        <a href="/audit.html" class="nav-link">📜 Audit Logs</a>
+        <a href="/reports.html" class="nav-link">📑 Reports</a>
+        <a href="/settings.html" class="nav-link">⚙️ Settings</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-profile">
+          <div class="admin-info">
+            <span id="admin-display-name" class="admin-name">Admin</span>
+            <span class="admin-role">Administrator</span>
+          </div>
+          <button class="btn-logout" onclick="App.logout()">Exit</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-wrapper">
+      <header class="top-header">
+        <div class="header-status-pills">
+          <div class="status-pill">
+            <span id="header-pulse-dot" class="pulse-dot"></span>
+            <span id="header-status-text">Web Protection Engine Active</span>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-primary btn-sm" onclick="openAddRuleModal()">+ Add Restricted Domain</button>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Web Activity & Anti-VPN Content Filtering</h1>
+            <p class="page-subtitle">Inspect client browsing activity and enforce endpoint restrictions that cannot be bypassed via VPN tunnels</p>
+          </div>
+        </div>
+
+        <!-- KPI Metrics -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Web Activities (24h)</div>
+            <div id="kpi-total-activities" class="kpi-val">0</div>
+            <div class="kpi-subtext">Captured browser endpoints</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Blocked Violations (24h)</div>
+            <div id="kpi-blocked-violations" class="kpi-val text-red">0</div>
+            <div class="kpi-subtext">Attempted policy breaches</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">VPN Detections (24h)</div>
+            <div id="kpi-vpn-detections" class="kpi-val text-amber">0</div>
+            <div class="kpi-subtext">Active tunnel adapters flagged</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Enforced Domain Rules</div>
+            <div id="kpi-active-rules" class="kpi-val text-cyan">0</div>
+            <div class="kpi-subtext">Active DNS & null-route blocks</div>
+          </div>
+        </div>
+
+        <!-- Anti-VPN Strict Mode Card -->
+        <div class="card" style="margin-bottom: 24px;">
+          <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <h2 class="card-title">🛡️ Anti-VPN Tunnel Circumvention Policy</h2>
+              <p style="font-size:13px; color:var(--text-dim); margin-top:2px;">
+                When enabled, client agents actively disarm WireGuard, OpenVPN, and Wintun tunnel adapters to prevent students/users from evading web filters.
+              </p>
+            </div>
+            <div style="display:flex; align-items:center; gap:16px;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:var(--text-main);">
+                <input type="checkbox" id="toggle-block-all-vpns" onchange="saveVpnPolicy()" style="transform: scale(1.4); cursor:pointer;">
+                <span>Strict Anti-VPN Mode</span>
+              </label>
+            </div>
+          </div>
+          <div style="display:flex; gap:24px; margin-top:12px; font-size:13px; color:var(--text-muted); flex-wrap:wrap;">
+            <div>✓ Intercepts DNS at OS layer before tunnel routing</div>
+            <div>✓ Null-routes restricted hostnames to 0.0.0.0</div>
+            <div>✓ Disarms unauthorized TAP/Wintun virtual adapters</div>
+          </div>
+        </div>
+
+        <!-- Tab Controls -->
+        <div style="display:flex; gap:12px; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+          <button id="tab-activity-btn" class="btn btn-secondary btn-sm" style="border-color:var(--accent-cyan); color:var(--accent-cyan);" onclick="switchTab('activity')">Live Activity Stream</button>
+          <button id="tab-rules-btn" class="btn btn-secondary btn-sm" onclick="switchTab('rules')">Enforced Block Rules (<span id="tab-rule-count">0</span>)</button>
+        </div>
+
+        <!-- TAB 1: Live Web Activity Stream -->
+        <div id="tab-activity-content">
+          <!-- Filters -->
+          <div class="card" style="padding: 14px 18px; margin-bottom: 16px; display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+            <input type="text" id="activity-search" class="form-input" style="flex:1; min-width:200px;" placeholder="Search domain, client IP, or process (e.g. chrome, tiktok)..." onkeyup="filterActivity()">
+            <select id="activity-status-filter" class="form-input" style="width:160px;" onchange="loadActivity()">
+              <option value="">All Dispositions</option>
+              <option value="BLOCKED">Only Blocked</option>
+              <option value="ALLOWED">Only Allowed</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="loadActivity()">🔄 Refresh Feed</button>
+          </div>
+
+          <!-- Activity Table -->
+          <div class="card" style="padding:0; overflow:hidden;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Device / Hostname</th>
+                  <th>Client IP</th>
+                  <th>Requested Domain</th>
+                  <th>Process</th>
+                  <th>VPN Status</th>
+                  <th>Disposition</th>
+                </tr>
+              </thead>
+              <tbody id="activity-tbody">
+                <tr><td colspan="7" class="text-center" style="padding:24px;">Loading web activity feed...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB 2: Domain Filter Rules Manager -->
+        <div id="tab-rules-content" style="display:none;">
+          <div class="card" style="padding:0; overflow:hidden;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Domain / Wildcard Pattern</th>
+                  <th>Category</th>
+                  <th>Action</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="rules-tbody">
+                <tr><td colspan="7" class="text-center" style="padding:24px;">Loading rules...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Rule Modal -->
+  <div id="rule-modal" class="modal-backdrop" style="display:none;">
+    <div class="modal-box" style="max-width: 500px;">
+      <h2 id="modal-title" style="margin-bottom: 16px; font-size:18px;">Add Domain Restriction Rule</h2>
+      <form id="rule-form" onsubmit="handleRuleSubmit(event)">
+        <input type="hidden" id="rule-id" value="">
+        <div class="form-group">
+          <label class="form-label">Domain or Wildcard Pattern</label>
+          <input type="text" id="rule-pattern" class="form-input" required placeholder="e.g. *.tiktok.com, bet365.com, *gaming*">
+          <p style="font-size:11px; color:var(--text-dim); margin-top:4px;">Use <code>*.domain.com</code> for subdomains or <code>*keyword*</code> for partial matches.</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="rule-category" class="form-input">
+            <option value="Social Media">Social Media</option>
+            <option value="Streaming">Streaming</option>
+            <option value="Gaming">Gaming</option>
+            <option value="Gambling">Gambling</option>
+            <option value="Adult">Adult / Inappropriate</option>
+            <option value="VPN/Proxy">VPN / Proxy Services</option>
+            <option value="General" selected>General</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Enforcement Action</label>
+          <select id="rule-action" class="form-input">
+            <option value="BLOCK" selected>BLOCK (Null-Route to 0.0.0.0)</option>
+            <option value="ALERT">ALERT (Allow & Flag in Audit)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" id="rule-desc" class="form-input" placeholder="e.g. Block distraction during lab hours">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:20px;">
+          <button type="button" class="btn btn-secondary" onclick="closeRuleModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Rule</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/app.js"></script>
+  <script>
+    let currentRules = [];
+    let currentActivities = [];
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await App.init("Web Policy");
+      loadStats();
+      loadVpnPolicy();
+      loadRules();
+      loadActivity();
+
+      // Subscribe to live websocket violations
+      App.on("WEB_FILTER_VIOLATION", (data) => {
+        App.showToast(`🛡️ Blocked web access attempt from ${data.client_ip}`, "warning");
+        loadActivity();
+        loadStats();
+      });
+
+      App.on("WEB_POLICY_UPDATED", () => {
+        loadRules();
+        loadStats();
+      });
+
+      setInterval(() => {
+        loadActivity();
+        loadStats();
+      }, 15000);
+    });
+
+    function switchTab(tab) {
+      if (tab === 'activity') {
+        document.getElementById("tab-activity-content").style.display = "block";
+        document.getElementById("tab-rules-content").style.display = "none";
+        document.getElementById("tab-activity-btn").style.borderColor = "var(--accent-cyan)";
+        document.getElementById("tab-activity-btn").style.color = "var(--accent-cyan)";
+        document.getElementById("tab-rules-btn").style.borderColor = "var(--border-subtle)";
+        document.getElementById("tab-rules-btn").style.color = "var(--text-main)";
+      } else {
+        document.getElementById("tab-activity-content").style.display = "none";
+        document.getElementById("tab-rules-content").style.display = "block";
+        document.getElementById("tab-rules-btn").style.borderColor = "var(--accent-cyan)";
+        document.getElementById("tab-rules-btn").style.color = "var(--accent-cyan)";
+        document.getElementById("tab-activity-btn").style.borderColor = "var(--border-subtle)";
+        document.getElementById("tab-activity-btn").style.color = "var(--text-main)";
+      }
+    }
+
+    async function loadStats() {
+      try {
+        const stats = await API.get("/api/v1/web-filter/stats");
+        document.getElementById("kpi-total-activities").textContent = stats.total_activities_24h || 0;
+        document.getElementById("kpi-blocked-violations").textContent = stats.blocked_attempts_24h || 0;
+        document.getElementById("kpi-vpn-detections").textContent = stats.vpn_detections_24h || 0;
+        document.getElementById("kpi-active-rules").textContent = stats.active_rules_count || 0;
+      } catch (err) {
+        console.error("Failed to load web stats:", err);
+      }
+    }
+
+    async function loadVpnPolicy() {
+      try {
+        const pol = await API.get("/api/v1/web-filter/policy/vpn");
+        document.getElementById("toggle-block-all-vpns").checked = pol.block_all_vpns;
+      } catch (err) {
+        console.error("Failed to load VPN policy:", err);
+      }
+    }
+
+    async function saveVpnPolicy() {
+      const isChecked = document.getElementById("toggle-block-all-vpns").checked;
+      try {
+        await API.post("/api/v1/web-filter/policy/vpn", {
+          block_all_vpns: isChecked,
+          block_wireguard: isChecked,
+          block_openvpn: isChecked,
+          terminate_vpn_processes: isChecked
+        });
+        App.showToast(`Strict Anti-VPN mode ${isChecked ? "ENABLED" : "DISABLED"}`, "success");
+      } catch (err) {
+        App.showToast("Failed to update Anti-VPN policy", "error");
+      }
+    }
+
+    async function loadRules() {
+      try {
+        const rules = await API.get("/api/v1/web-filter/rules");
+        currentRules = rules;
+        document.getElementById("tab-rule-count").textContent = rules.length;
+
+        const tbody = document.getElementById("rules-tbody");
+        if (!rules || rules.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center" style="padding:24px;">No filter rules configured yet.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = rules.map(r => `
+          <tr>
+            <td style="font-family:var(--font-mono); font-size:12px;">#${r.id}</td>
+            <td style="font-weight:700; font-family:var(--font-mono); color:var(--accent-cyan);">${escapeHtml(r.domain_pattern)}</td>
+            <td><span class="badge badge-secondary">${escapeHtml(r.category)}</span></td>
+            <td>
+              <span class="badge ${r.action === 'BLOCK' ? 'badge-danger' : 'badge-warning'}">
+                ${r.action}
+              </span>
+            </td>
+            <td style="color:var(--text-muted); font-size:13px;">${escapeHtml(r.description || '-')}</td>
+            <td>
+              <span class="badge ${r.is_active ? 'badge-success' : 'badge-secondary'}">
+                ${r.is_active ? 'Enforced' : 'Disabled'}
+              </span>
+            </td>
+            <td>
+              <button class="btn btn-secondary btn-xs" onclick="editRule(${r.id})">Edit</button>
+              <button class="btn btn-danger btn-xs" style="margin-left:4px;" onclick="deleteRule(${r.id})">Delete</button>
+            </td>
+          </tr>
+        `).join("");
+      } catch (err) {
+        console.error("Failed to load rules:", err);
+      }
+    }
+
+    async function loadActivity() {
+      try {
+        const statusFilter = document.getElementById("activity-status-filter").value;
+        let url = "/api/v1/web-filter/activity?limit=100";
+        if (statusFilter) url += `&action_taken=${statusFilter}`;
+
+        const res = await API.get(url);
+        currentActivities = res.items || [];
+        renderActivity(currentActivities);
+      } catch (err) {
+        console.error("Failed to load activity:", err);
+      }
+    }
+
+    function renderActivity(items) {
+      const tbody = document.getElementById("activity-tbody");
+      if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center" style="padding:24px;">No browsing activity recorded yet. Client nodes report telemetry periodically.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = items.map(a => `
+        <tr>
+          <td style="font-family:var(--font-mono); font-size:12px; color:var(--text-dim);">${formatTime(a.timestamp)}</td>
+          <td style="font-weight:600;">${escapeHtml(a.hostname || a.mac_address || 'Unknown')}</td>
+          <td style="font-family:var(--font-mono); font-size:12px;">${escapeHtml(a.ip_address || '-')}</td>
+          <td style="font-family:var(--font-mono); font-weight:700; color:var(--text-white);">${escapeHtml(a.domain)}</td>
+          <td style="font-size:12px; color:var(--text-muted);">${escapeHtml(a.process_name || 'browser')}</td>
+          <td>
+            ${a.is_vpn_traffic 
+              ? '<span class="badge badge-warning">VPN Active</span>' 
+              : '<span class="badge badge-secondary">Direct LAN</span>'}
+          </td>
+          <td>
+            <span class="badge ${a.action_taken === 'BLOCKED' ? 'badge-danger' : 'badge-success'}">
+              ${a.action_taken}
+            </span>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function filterActivity() {
+      const q = document.getElementById("activity-search").value.toLowerCase();
+      if (!q) {
+        renderActivity(currentActivities);
+        return;
+      }
+      const filtered = currentActivities.filter(a => 
+        (a.domain && a.domain.toLowerCase().includes(q)) ||
+        (a.hostname && a.hostname.toLowerCase().includes(q)) ||
+        (a.ip_address && a.ip_address.includes(q)) ||
+        (a.process_name && a.process_name.toLowerCase().includes(q))
+      );
+      renderActivity(filtered);
+    }
+
+    function openAddRuleModal() {
+      document.getElementById("modal-title").textContent = "Add Domain Restriction Rule";
+      document.getElementById("rule-id").value = "";
+      document.getElementById("rule-pattern").value = "";
+      document.getElementById("rule-category").value = "General";
+      document.getElementById("rule-action").value = "BLOCK";
+      document.getElementById("rule-desc").value = "";
+      document.getElementById("rule-modal").style.display = "flex";
+    }
+
+    function editRule(id) {
+      const r = currentRules.find(x => x.id === id);
+      if (!r) return;
+      document.getElementById("modal-title").textContent = "Edit Domain Restriction Rule";
+      document.getElementById("rule-id").value = r.id;
+      document.getElementById("rule-pattern").value = r.domain_pattern;
+      document.getElementById("rule-category").value = r.category;
+      document.getElementById("rule-action").value = r.action;
+      document.getElementById("rule-desc").value = r.description || "";
+      document.getElementById("rule-modal").style.display = "flex";
+    }
+
+    function closeRuleModal() {
+      document.getElementById("rule-modal").style.display = "none";
+    }
+
+    async function handleRuleSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById("rule-id").value;
+      const pattern = document.getElementById("rule-pattern").value.trim();
+      const category = document.getElementById("rule-category").value;
+      const action = document.getElementById("rule-action").value;
+      const desc = document.getElementById("rule-desc").value.trim();
+
+      try {
+        if (id) {
+          await API.put(`/api/v1/web-filter/rules/${id}`, {
+            domain_pattern: pattern,
+            category: category,
+            action: action,
+            description: desc
+          });
+          App.showToast("Rule updated successfully", "success");
+        } else {
+          await API.post("/api/v1/web-filter/rules", {
+            domain_pattern: pattern,
+            category: category,
+            action: action,
+            description: desc,
+            is_active: true
+          });
+          App.showToast("New domain rule created and distributed", "success");
+        }
+        closeRuleModal();
+        loadRules();
+        loadStats();
+      } catch (err) {
+        App.showToast(`Error saving rule: ${err.message}`, "error");
+      }
+    }
+
+    async function deleteRule(id) {
+      if (!confirm("Are you sure you want to delete this restriction rule?")) return;
+      try {
+        await API.delete(`/api/v1/web-filter/rules/${id}`);
+        App.showToast("Rule deleted", "success");
+        loadRules();
+        loadStats();
+      } catch (err) {
+        App.showToast(`Failed to delete rule: ${err.message}`, "error");
+      }
+    }
+
+    function formatTime(isoStr) {
+      if (!isoStr) return "-";
+      const d = new Date(isoStr);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+  </script>
+</body>
+</html>

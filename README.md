@@ -16,8 +16,13 @@ NETSENTRY is an authorized local-network monitoring platform paired with a **str
   - Remote request triggers an unmissable modal dialog on the client device.
   - If user clicks **DENY**, the camera stays completely OFF and an audit log is recorded.
   - If user clicks **ALLOW**, a prominent `CAMERA ACTIVE` banner appears with countdown and an instant `[STOP CAMERA]` button.
+- **Web Activity Monitoring & Anti-VPN Content Filtering**:
+  - Endpoint-level browsing activity inspection capturing requested domains and processes across modern browsers.
+  - VPN-resistant domain restriction via surgical OS-level hosts null-routing (`0.0.0.0`) and local DNS cache synchronization that cannot be evaded via standard VPN tunnels.
+  - Strict Anti-VPN Mode that disarms WireGuard, OpenVPN, Wintun, and TAP virtual tunnel adapters during monitored lab/work sessions.
+  - Dedicated administrative dashboard with live telemetry feed, category filters, and real-time violation alerts.
 - **Bounded Session Lifecycles**: Default 10-minute maximum session with automated server-side expiration guards and unilateral termination by either party.
-- **Immutable Security Audit Trail**: Append-only relational audit ledger recording all administrative, device, and camera operations.
+- **Immutable Security Audit Trail**: Append-only relational audit ledger recording all administrative, device, camera, and web filtering operations.
 - **Executive PDF & CSV Reports**: One-click branded PDF reports generated with ReportLab and comprehensive CSV data exports.
 - **Demonstration Mode (`DEMO MODE`)**: Built-in simulation generator clearly labeled `[DEMO MODE]` for academic defenses and evaluations when external physical hardware is unavailable.
 
@@ -26,12 +31,12 @@ NETSENTRY is an authorized local-network monitoring platform paired with a **str
 ## Technology Stack
 
 - **Backend**: Python 3.12+, FastAPI, Uvicorn, SQLAlchemy, SQLite (WAL mode), Pydantic, WebSockets
-- **Networking**: Native ARP table parsing, ICMP socket probe sweep, `ipaddress`, reverse DNS resolution
+- **Networking**: Native ARP table parsing, ICMP socket probe sweep, DNS cache inspection, adapter detection
 - **Camera & Video**: OpenCV (`cv2`), Pillow (PIL), authenticated binary WebSocket JPEG streaming relay
 - **Frontend**: Vanilla HTML5/CSS3 (Cybersecurity Design System), Vanilla JS API client, Chart.js
-- **Security & Cryptography**: Bcrypt (cost 12), PyJWT (HS256), SHA-256 token hashing, account lockout
+- **Security & Cryptography**: Bcrypt (cost 12), PyJWT (HS256), SHA-256 token hashing, account lockout, hosts null-routing
 - **Reporting**: ReportLab PDF generator, CSV streaming
-- **Testing**: Pytest test suite (17 automated unit & integration tests)
+- **Testing**: Pytest test suite (24 automated unit, integration, and E2E workflow tests)
 
 ---
 

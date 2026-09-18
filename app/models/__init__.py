@@ -6,6 +6,7 @@ from app.models.alert import Alert
 from app.models.audit_log import AuditLog
 from app.models.network_scan import NetworkScan
 from app.models.system_setting import SystemSetting
+from app.models.web_policy import WebFilterRule, WebActivityLog, VpnRestrictionPolicy
 
 __all__ = [
     "User",
@@ -16,5 +17,9 @@ __all__ = [
     "Alert",
     "AuditLog",
     "NetworkScan",
-    "SystemSetting"
+    "SystemSetting",
+    "WebFilterRule",
+    "WebActivityLog",
+    "VpnRestrictionPolicy"
 ]
+

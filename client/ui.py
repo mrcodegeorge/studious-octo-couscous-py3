@@ -172,6 +172,30 @@ class NetsentryClientUI:
             command=self._on_stop_click
         )
 
+        # Web & VPN Shield Status Card
+        self._create_card_header(main_frame, "NETWORK DEFENSE & WEB SHIELD")
+        self.shield_card = tk.Frame(main_frame, bg=BG_CARD, padx=16, pady=12, highlightbackground=BG_CARD_LIGHT, highlightthickness=1)
+        self.shield_card.pack(fill=tk.X, pady=(0, 14))
+
+        self.shield_status_badge = tk.Label(
+            self.shield_card,
+            text="● WEB SHIELD: ACTIVE",
+            font=("Helvetica", 10, "bold"),
+            fg=ACCENT_GREEN,
+            bg=BG_CARD
+        )
+        self.shield_status_badge.pack(anchor=tk.W)
+
+        self.shield_details_label = tk.Label(
+            self.shield_card,
+            text="Enforcing network policy | Anti-VPN protection: ENABLED",
+            font=("Helvetica", 9),
+            fg=TEXT_MUTED,
+            bg=BG_CARD,
+            justify=tk.LEFT
+        )
+        self.shield_details_label.pack(anchor=tk.W, pady=(4, 0))
+
         # Bottom Bar: Privacy & Info
         bottom_frame = tk.Frame(self.root, bg=BG_CARD, padx=20, pady=10)
         bottom_frame.pack(fill=tk.X, side=tk.BOTTOM)
@@ -433,6 +457,19 @@ class NetsentryClientUI:
         )
         text_box.insert(tk.END, policy)
         text_box.config(state=tk.DISABLED)
+
+    def set_web_shield_status(self, rules_count: int, vpn_blocked: bool, blocked_count: int = 0):
+        """Update Web Defense Shield badge and details."""
+        def _update():
+            vpn_text = "Anti-VPN: ACTIVE" if vpn_blocked else "Anti-VPN: Permitted"
+            self.shield_status_badge.config(
+                text=f"● WEB SHIELD: ENFORCING ({rules_count} Rules)",
+                fg=ACCENT_GREEN
+            )
+            self.shield_details_label.config(
+                text=f"{vpn_text} | Blocked Violations: {blocked_count}"
+            )
+        self.root.after(0, _update)
 
     def run(self):
         self.root.mainloop()

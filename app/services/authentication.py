@@ -78,6 +78,17 @@ def get_current_user(token: Optional[str] = Depends(oauth2_scheme), db: Session 
     return user
 
 
+def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
+    """FastAPI dependency to ensure the authenticated user has admin privileges."""
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator privileges required"
+        )
+    return current_user
+
+
+
 def authenticate_admin(db: Session, username: str, password: str, client_ip: Optional[str] = None) -> User:
     """
     Authenticate an administrator with account lockout protection.

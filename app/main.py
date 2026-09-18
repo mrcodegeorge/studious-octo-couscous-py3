@@ -67,6 +67,7 @@ from app.api.audit import router as audit_router
 from app.api.reports import router as reports_router
 from app.api.client_api import router as client_router
 from app.api.websocket_endpoints import router as ws_router
+from app.api.web_filter import router as web_filter_router
 
 app.include_router(auth_router)
 app.include_router(devices_router)
@@ -76,6 +77,8 @@ app.include_router(alerts_router)
 app.include_router(audit_router)
 app.include_router(reports_router)
 app.include_router(client_router)
+app.include_router(web_filter_router, prefix="/api/v1")
+app.include_router(web_filter_router, prefix="/api")
 app.include_router(ws_router)
 
 # Mount Frontend Static Assets
