@@ -1,6 +1,11 @@
 # NETSENTRY: Local Wi-Fi Network Monitoring & Consent-Based Remote Camera System
 **Final Year Project Academic Specification & Engineering Report**
 
+- **Author & Principal Investigator**: **George Asiedu Annan**
+- **Organization**: **Neolifeporium**
+- **Subsidiary**: **Gazomapay**
+- **Collaborating Assets**: **Neodata** &bull; **Nexa Kreatives** &bull; **Nexa Kreatives Academy**
+
 ---
 
 ## 1. Project Background & Context
@@ -136,9 +141,24 @@ Either the client user (clicking `STOP CAMERA`), the administrator (clicking `EN
 | `test_camera_permissions.py` | 4 | PASSED | Code expiration, **request does NOT start camera**, explicit denial keeps camera off, explicit allow starts session. |
 | `test_audit.py` | 1 | PASSED | Immutable audit log generation and querying. |
 | `test_client.py` | 2 | PASSED | Local network telemetry detection, synthetic frame fallback encoding. |
-| **Total** | **17** | **100% PASSED** | All critical security and consent invariants mathematically and functionally verified. |
+| `test_web_filter.py` | 6 | PASSED | Domain wildcard pattern matching, web activity ingestion, hosts surgical null-routing, anti-VPN policy management. |
+| `test_e2e_workflow.py` | 1 | PASSED | End-to-end full consent lifecycle verification (enrollment, allow, deny). |
+| **Total** | **24** | **100% PASSED** | All critical security, privacy, and consent invariants mathematically and functionally verified. |
 
 ---
 
 ## 10. Conclusion & Future Work
-NETSENTRY proves that local network observability and remote visual verification can be harmoniously integrated without sacrificing endpoint privacy or administrative rigor. Future research will explore WebRTC peer-to-peer data channels for multi-camera classroom synchronization, TPM-backed hardware attestation for enrolled endpoints, and zero-knowledge consent verification.
+NETSENTRY proves that local network observability, web safety enforcement, and remote visual verification can be harmoniously integrated without sacrificing endpoint privacy or administrative rigor. Future research will explore WebRTC peer-to-peer data channels for multi-camera classroom synchronization, TPM-backed hardware attestation for enrolled endpoints, and zero-knowledge consent verification.
+
+---
+
+## 11. Authorship & Intellectual Property
+
+- **Lead Engineer & Author**: George Asiedu Annan
+- **Corporate Entity**: Neolifeporium
+- **Subsidiary**: Gazomapay
+- **Technology Assets**:
+  - Neodata (Analytics & Security Intelligence)
+  - Nexa Kreatives (Product Design & Interaction Architecture)
+  - Nexa Kreatives Academy (Curriculum & Technical Research)
+- **License**: MIT License (Copyright &copy; 2026 George Asiedu Annan / Neolifeporium). All rights reserved.

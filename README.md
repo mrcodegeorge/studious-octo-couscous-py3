@@ -129,5 +129,21 @@ This enables simulated discovery and dynamic network events clearly labeled with
 
 ---
 
-## License & Author
-NETSENTRY is designed and developed as an authorized cybersecurity and computer engineering academic project. Strictly intended for authorized research and educational environments.
+## Author & Organization
+
+- **Author & Lead Architect**: **George Asiedu Annan**
+- **Parent Organization**: **Neolifeporium**
+- **Subsidiary**: **Gazomapay**
+- **Associated Assets & Divisions**:
+  - **Neodata** — Data Analytics & Intelligence Subsystems
+  - **Nexa Kreatives** — Design Engineering, Digital Media & Creative Solutions
+  - **Nexa Kreatives Academy** — Educational Programs, Cybersecurity & Technical Training
+
+---
+
+## License
+
+This project is open-source and released under the **[MIT License](LICENSE)**.
+
+Copyright &copy; 2026 **George Asiedu Annan** &bull; **Neolifeporium**. All rights reserved.  
+Strictly intended for authorized research, institutional administration, educational computing, and controlled laboratory environments.

@@ -214,7 +214,7 @@ class NetsentryClientUI:
 
         footer_text = tk.Label(
             bottom_frame,
-            text="NETSENTRY v1.0.0 Authorized Node",
+            text="NETSENTRY v1.0.0 • George Asiedu Annan • Neolifeporium",
             font=("Helvetica", 8),
             fg=TEXT_MUTED,
             bg=BG_CARD
